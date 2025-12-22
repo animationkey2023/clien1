@@ -1,9 +1,18 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Packages.composer", "nodejs_20"]
+nixPkgs = [
+  "php82",
+  "php82Packages.composer",
+  "nodejs_20"
+]
+
+[phases.extensions]
+cmds = [
+  "install-php-extensions gd"
+]
 
 [phases.build]
 cmds = [
-  "composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-gd",
+  "composer install --no-dev --optimize-autoloader",
   "npm ci --omit=dev || true"
 ]
 
