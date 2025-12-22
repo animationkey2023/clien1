@@ -1,6 +1,6 @@
 FROM dunglas/frankenphp:php8.2
 
-# Install system dependencies
+# Install system deps + GD
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -15,13 +15,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy project
 COPY . .
 
-# Install PHP dependencies
+# Install PHP deps
 RUN composer install --no-dev --optimize-autoloader
 
-# Install & build frontend (aman walau ga ada)
+# Build frontend (jika ada)
 RUN if [ -f package.json ]; then npm install && npm run build || true; fi
 
 # Permission Laravel
