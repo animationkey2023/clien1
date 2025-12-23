@@ -1,5 +1,6 @@
 FROM dunglas/frankenphp:php8.2
 
+# Install system deps + PHP extensions
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -14,8 +15,10 @@ RUN apt-get update && apt-get install -y \
         zip \
         pdo \
         pdo_mysql \
+        mysqli \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin \
     --filename=composer
@@ -23,11 +26,17 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
 WORKDIR /app
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
 
-RUN mkdir -p storage bootstrap/cache \
-    && chmod -R 777 storage bootstrap/cache
+# Laravel required dirs (SUPER IMPORTANT)
+RUN mkdir -p storage/framework/sessions \
+    storage/framework/views \
+    storage/framework/cache \
+    bootstrap/cache
 
-RUN php artisan config:clear
+# Permission
+RUN chmod -R 777 storage bootstrap/cache
 
+# Railway port
 CMD php artisan serve --host=0.0.0.0 --port=$PORT
