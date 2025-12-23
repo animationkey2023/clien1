@@ -1,31 +1,31 @@
 FROM dunglas/frankenphp:php8.2
 
-# Install system deps + GD
+# Install system deps + GD + tools
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
     unzip \
     git \
-    nodejs \
-    npm \
+    curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Composer (INI KUNCI)
+RUN curl -sS https://getcomposer.org/installer | php -- \
+    --install-dir=/usr/local/bin \
+    --filename=composer
 
 WORKDIR /app
 
 COPY . .
 
-# Install PHP deps
+# Install PHP dependencies (vendor)
 RUN composer install --no-dev --optimize-autoloader
-
-# Build frontend (jika ada)
-RUN if [ -f package.json ]; then npm install && npm run build || true; fi
 
 # Permission Laravel
 RUN chmod -R 777 storage bootstrap/cache
 
-EXPOSE 8080
-
-CMD php artisan serve --host=0.0.0.0 --port=8080
+# Railway wajib pakai $PORT
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
